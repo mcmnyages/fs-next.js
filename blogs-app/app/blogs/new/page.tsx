@@ -1,6 +1,7 @@
 
 import { createBlog } from '../../actions/blogs'
 
+
 const NewBlog = () => {
   return (
     <div>

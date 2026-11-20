@@ -12,7 +12,7 @@ const Blogs = async ({
 }) => {
   const { filter } = await searchParams
 
-  const allBlogs = getBlogs()
+  const allBlogs = await getBlogs()
 
   const filteredBlogs = filter
     ? allBlogs.filter((blog) =>
