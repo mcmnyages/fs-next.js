@@ -2,8 +2,7 @@
 import Link from "next/link"
 import { getUsers } from "../services/users"
 
-export const instant= false
-
+export const instant=false
 const Users = async () => {
   const users = await getUsers()
 
@@ -13,10 +12,9 @@ const Users = async () => {
 
       {users.map(user => (
         <div key={user.id}>
-          <Link href={`/users/${user.id}`}>
+          <Link href={`/users/${user.username}`}>
             <h2>{user.name}</h2>
           </Link>
-          <p>Username: {user.username}</p>
         </div>
       ))}
     </div>
