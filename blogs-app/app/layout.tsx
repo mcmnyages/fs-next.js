@@ -1,30 +1,18 @@
-
-import Link from 'next/link'
-import './globals.css'
-
-export const metadata = {
-  title: 'Bloglist',
-  description: 'A simple blog application',
-}
+import AuthSessionProvider from "./components/SessionProvider"
+import NavBar from "./components/NavBar"
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
       <body>
-        <nav>
-          <Link href="/">home</Link>
-          {' | '}
-          <Link href="/blogs">blogs</Link>
-          {' | '}
-          <Link href="/users">users</Link>
-          {' | '}
-          <Link href="/blogs/new">create new</Link>
-        </nav>
-        <main>{children}</main>
+        <AuthSessionProvider>
+          <NavBar />
+          {children}
+        </AuthSessionProvider>
       </body>
     </html>
   )

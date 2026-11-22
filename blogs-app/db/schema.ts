@@ -5,12 +5,14 @@ import {
   serial,
   varchar,
   integer,
+  text
 } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 255 }).notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
+  username: text("username").notNull().unique(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull().default(""),
 })
 
 export const blogs = pgTable("blogs", {
