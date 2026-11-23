@@ -6,30 +6,53 @@ import { revalidatePath } from 'next/cache'
 import { addBlog,likeBlog } from '../services/blogs'
 import { auth } from '@/auth'
 
+
 export const createBlog = async (
-    prevState: { error: string },
-  formData: FormData) => {
-   const session = await auth()
+  prevState: {
+    error: string
+    values?: {
+      title: string
+      author: string
+      url: string
+    }
+  },
+  formData: FormData
+) => {
+  const session = await auth()
+
   if (!session) {
     redirect("/login")
   }
-  const title = formData.get('title') as string
-  if(!title || title.length<5){
-    return {error:"Title must be atleast 5 characters long!"}
+
+  const title = formData.get("title") as string
+  const author = formData.get("author") as string
+  const url = formData.get("url") as string
+
+  if (!title || title.length < 5) {
+    return {
+      error: "Title must be at least 5 characters long!",
+      values: { title, author, url }
+    }
   }
-  const author = formData.get('author') as string
-    if(!author || author.length<5){
-    return {error:"Author must be atleast 5 characters long!"}
+
+  if (!author || author.length < 5) {
+    return {
+      error: "Author must be at least 5 characters long!",
+      values: { title, author, url }
+    }
   }
-  const url = formData.get('url') as string
-    if(!url || url.length<5){
-    return {error:"Url must be atleast 5 characters long!"}
+
+  if (!url || url.length < 5) {
+    return {
+      error: "Url must be at least 5 characters long!",
+      values: { title, author, url }
+    }
   }
 
   await addBlog(title, author, url)
 
-  revalidatePath('/blogs')
-  redirect('/blogs')
+  revalidatePath("/blogs")
+  redirect("/blogs")
 }
 
 
