@@ -4,7 +4,7 @@
 import { redirect } from 'next/navigation'
 import { eq } from "drizzle-orm"
 import { revalidatePath } from 'next/cache'
-import { addBlog, likeBlog, addBlogToReadingList } from '../services/blogs'
+import { addBlog, likeBlog, addBlogToReadingList,markBlogAsRead } from '../services/blogs'
 import { auth } from '@/auth'
 import { users, blogs } from "@/db/schema"
 import { db } from "@/db"
@@ -103,4 +103,23 @@ export const addToReadingList = async (formData: FormData) => {
   await addBlogToReadingList(user.id, blogId)
 
   revalidatePath(`/blogs/${blogId}`)
+}
+
+export const markAsRead = async (formData: FormData) => {
+  const session = await auth()
+  const username = session?.user?.email
+
+  if (!username) {
+    redirect("/login")
+  }
+
+  const blogId = Number(formData.get("blogId"))
+
+  if (!Number.isInteger(blogId) || blogId <= 0) {
+    throw new Error("Invalid blog ID")
+  }
+
+  await markBlogAsRead(username, blogId)
+
+  revalidatePath("/me")
 }

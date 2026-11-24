@@ -43,6 +43,13 @@
       "when": 1795532316671,
       "tag": "0005_violet_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795541175274,
+      "tag": "0006_worried_thor",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 
 import { eq, sql, and } from "drizzle-orm"
-import { db } from "../../db"
-import { blogs, readingList } from "../../db/schema"
+import { db } from "@/db"
+import { blogs, readingList,users } from "@/db/schema"
 
 export const getBlogs = async () => {
   return db.query.blogs.findMany()
@@ -58,4 +58,27 @@ export const getReadingList = async (userId: number) => {
       blog: true,
     },
   })
+}
+
+
+// Mark a blog as read
+export const markBlogAsRead = async (
+  username: string,
+  blogId: number
+) => {
+  const user = await db.query.users.findFirst({
+    where: eq(users.username, username),
+  })
+
+  if (!user) return
+
+  await db
+    .update(readingList)
+    .set({ read: true })
+    .where(
+      and(
+        eq(readingList.userId, user.id),
+        eq(readingList.blogId, blogId)
+      )
+    )
 }

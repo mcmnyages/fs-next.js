@@ -6,7 +6,8 @@ import {
   varchar,
   integer,
   text,
-  primaryKey
+  primaryKey,
+  boolean
 } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
@@ -28,6 +29,7 @@ export const blogs = pgTable("blogs", {
 
 
 
+
 export const readingList = pgTable(
   "reading_list",
   {
@@ -38,6 +40,8 @@ export const readingList = pgTable(
     blogId: integer("blog_id")
       .notNull()
       .references(() => blogs.id),
+
+    read: boolean("read").notNull().default(false),
   },
   (table) => [
     primaryKey({
@@ -45,6 +49,7 @@ export const readingList = pgTable(
     }),
   ]
 )
+
 
 
 
@@ -59,3 +64,17 @@ export const blogsRelations = relations(blogs, ({ one }) => ({
   }),
 }))
 
+
+export const readingListRelations = relations(
+  readingList,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [readingList.userId],
+      references: [users.id],
+    }),
+    blog: one(blogs, {
+      fields: [readingList.blogId],
+      references: [blogs.id],
+    }),
+  })
+)
