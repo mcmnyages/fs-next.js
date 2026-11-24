@@ -1,0 +1,11 @@
+
+### Get my information using a valid API token
+GET http://localhost:3000/api/me
+Authorization: Bearer YOUR_API_TOKEN
+
+### Test with an invalid token
+GET http://localhost:3000/api/me
+Authorization: Bearer invalid-token
+
+### Test without an authorization header
+GET http://localhost:3000/api/me

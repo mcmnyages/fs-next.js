@@ -5,8 +5,6 @@ import { createBlog } from "../../actions/blogs"
 import { useNotification } from "../../components/NotificationContext"
 import { useRouter } from "next/navigation"
 
-export const instant = false
-
 
 const NewBlog = () => {
   const [state, formAction] = useActionState(createBlog, {

@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs"
 import { db } from "../../db"
 import { users } from "../../db/schema"
 import { eq } from "drizzle-orm"
+import { revalidatePath } from "next/cache"
+import { auth } from "../../auth"
 
 export const registerUser = async (
   prevState: { error: string },
@@ -42,8 +44,28 @@ export const registerUser = async (
   await db.insert(users).values({
     username,
     name,
-    passwordHash
+    passwordHash,
   })
 
   redirect("/login")
+}
+
+ 
+export const generateToken = async () => {
+  const session = await auth()
+
+  const username = session?.user?.email
+
+  if (!username) {
+    throw new Error("You must be logged in")
+  }
+
+  const token = crypto.randomUUID()
+
+  await db
+    .update(users)
+    .set({ token })
+    .where(eq(users.username, username))
+
+  revalidatePath("/me")
 }

@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull().default(""),
+  token: text("token"),
 })
 
 export const blogs = pgTable("blogs", {
@@ -24,12 +25,10 @@ export const blogs = pgTable("blogs", {
   userId: integer("user_id").references(() => users.id),
 })
 
-// User has many blogs
 export const usersRelations = relations(users, ({ many }) => ({
   blogs: many(blogs),
 }))
 
-// Blog belongs to one user
 export const blogsRelations = relations(blogs, ({ one }) => ({
   user: one(users, {
     fields: [blogs.userId],

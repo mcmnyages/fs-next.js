@@ -1,3 +1,4 @@
+
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { eq } from "drizzle-orm"
@@ -12,6 +13,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
           return null
@@ -42,10 +44,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+
   pages: {
     signIn: "/login",
   },
+
   session: {
     strategy: "jwt",
+  },
+
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+
+      return token
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+      }
+
+      return session
+    },
   },
 })

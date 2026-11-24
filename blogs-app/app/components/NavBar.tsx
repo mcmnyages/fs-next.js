@@ -55,6 +55,12 @@ export default function NavBar() {
                 </em>{" "}
                 logged in
               </span>
+              <Link
+                href="/me"
+                className=" text-stone-950 shadow-sm transition hover:text-purple-400 transition"
+              >
+                me
+              </Link>
               <button
                 onClick={() => signOut()}
                 className="cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-1.5 font-medium text-stone-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
