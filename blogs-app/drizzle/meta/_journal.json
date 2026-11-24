@@ -36,6 +36,13 @@
       "when": 1795529740731,
       "tag": "0004_daily_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795532316671,
+      "tag": "0005_violet_supreme_intelligence",
+      "breakpoints": true
     }
   ]
 }

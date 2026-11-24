@@ -5,7 +5,8 @@ import {
   serial,
   varchar,
   integer,
-  text
+  text,
+  primaryKey
 } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
@@ -25,6 +26,28 @@ export const blogs = pgTable("blogs", {
   userId: integer("user_id").references(() => users.id),
 })
 
+
+
+export const readingList = pgTable(
+  "reading_list",
+  {
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+
+    blogId: integer("blog_id")
+      .notNull()
+      .references(() => blogs.id),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.userId, table.blogId],
+    }),
+  ]
+)
+
+
+
 export const usersRelations = relations(users, ({ many }) => ({
   blogs: many(blogs),
 }))
@@ -35,3 +58,4 @@ export const blogsRelations = relations(blogs, ({ one }) => ({
     references: [users.id],
   }),
 }))
+
