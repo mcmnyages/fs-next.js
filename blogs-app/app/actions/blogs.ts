@@ -3,7 +3,7 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { addBlog,likeBlog } from '../services/blogs'
+import { addBlog, likeBlog } from '../services/blogs'
 import { auth } from '@/auth'
 
 
@@ -31,6 +31,7 @@ export const createBlog = async (
   if (!title || title.length < 5) {
     return {
       error: "Title must be at least 5 characters long!",
+      success: false,
       values: { title, author, url }
     }
   }
@@ -38,6 +39,7 @@ export const createBlog = async (
   if (!author || author.length < 5) {
     return {
       error: "Author must be at least 5 characters long!",
+      success: false,
       values: { title, author, url }
     }
   }
@@ -45,6 +47,7 @@ export const createBlog = async (
   if (!url || url.length < 5) {
     return {
       error: "Url must be at least 5 characters long!",
+      success: false,
       values: { title, author, url }
     }
   }
@@ -52,7 +55,7 @@ export const createBlog = async (
   await addBlog(title, author, url)
 
   revalidatePath("/blogs")
-  redirect("/blogs")
+  return { error: "", success: true }
 }
 
 
