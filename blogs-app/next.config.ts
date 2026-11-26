@@ -1,20 +1,31 @@
-import type { NextConfig } from "next";
+
+import createMDX from "@next/mdx"
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
+
   experimental: {
     agentFeedback: true,
   },
+
   cacheComponents: true,
   partialPrefetching: true,
+
   turbopack: {
     rules: {
+      "*.mdx": {
+        loaders: ["@mdx-js/loader"],
+        as: "*.js",
+      },
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
     },
   },
-};
+}
 
-export default nextConfig;
+const withMDX = createMDX({})
+
+export default withMDX(nextConfig)
