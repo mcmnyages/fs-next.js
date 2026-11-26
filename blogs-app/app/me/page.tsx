@@ -75,11 +75,10 @@ const MePage = async () => {
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                Username
-              </p>
-
-              <p className="mt-1 text-base font-semibold text-stone-800">
+              <p
+                data-testid="user-username"
+                className="mt-1 text-base font-semibold text-stone-800"
+              >
                 {user.username}
               </p>
             </div>

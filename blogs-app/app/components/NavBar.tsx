@@ -23,19 +23,19 @@ export default function NavBar() {
               href="/"
               className="rounded-lg px-3 py-1.5 transition hover:bg-stone-100 hover:text-stone-950"
             >
-              Home
+              home
             </Link>
             <Link
               href="/blogs"
               className="rounded-lg px-3 py-1.5 transition hover:bg-stone-100 hover:text-stone-950"
             >
-              Blogs
+              blogs
             </Link>
             <Link
               href="/users"
               className="rounded-lg px-3 py-1.5 transition hover:bg-stone-100 hover:text-stone-950"
             >
-              Users
+              users
             </Link>
           </div>
         </div>
@@ -62,10 +62,10 @@ export default function NavBar() {
                 me
               </Link>
               <button
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: "/" })}
                 className="cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-1.5 font-medium text-stone-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
               >
-                Logout
+                logout
               </button>
             </>
           ) : (
@@ -74,13 +74,13 @@ export default function NavBar() {
                 href="/login"
                 className="rounded-lg px-3 py-1.5 font-medium text-stone-700 transition hover:bg-stone-100 hover:text-stone-950"
               >
-                Login
+                login
               </Link>
               <Link
                 href="/register"
                 className="rounded-full bg-stone-900 px-4 py-1.5 font-semibold text-white transition hover:bg-amber-600"
               >
-                Register
+                register
               </Link>
             </>
           )}

@@ -10,6 +10,8 @@ export default function Notification() {
 
   return (
     <div
+      data-testid="notification"
+      role="alert"
       className={`px-4 py-2.5 mb-2.5 rounded text-white ${
         type === "success" ? "bg-green-600" : "bg-red-600"
       }`}
