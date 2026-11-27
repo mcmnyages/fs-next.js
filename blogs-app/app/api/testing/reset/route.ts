@@ -11,11 +11,9 @@ export async function DELETE() {
   }
 
   try {
-    await db.batch([
-      db.delete(readingList),
-      db.delete(blogs),
-      db.delete(users),
-    ])
+    await db.delete(readingList)
+    await db.delete(blogs)
+    await db.delete(users)
 
     return NextResponse.json(
       { message: "All tables cleared successfully" },

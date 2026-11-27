@@ -9,6 +9,7 @@ import {
   useRef,
   useEffect,
 } from "react"
+import { usePathname } from "next/navigation"
 
 type NotificationType = "success" | "error"
 
@@ -32,6 +33,7 @@ export const NotificationProvider = ({
 }: {
   children: React.ReactNode
 }) => {
+  const pathname = usePathname()
   const [message, setMessage] = useState("")
   const [type, setType] = useState<NotificationType>("success")
 
@@ -61,6 +63,23 @@ export const NotificationProvider = ({
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (pathname !== "/blogs") return
+
+    const timer = window.setTimeout(() => {
+      const hasBlogCreatedFlash = document.cookie
+        .split(";")
+        .some((cookie) => cookie.trim() === "blog-created=1")
+
+      if (!hasBlogCreatedFlash) return
+
+      document.cookie = "blog-created=; Max-Age=0; Path=/; SameSite=Lax"
+      showNotification("Blog created successfully!", "success")
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [pathname, showNotification])
 
   return (
     <NotificationContext.Provider

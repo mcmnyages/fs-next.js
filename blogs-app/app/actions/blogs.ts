@@ -4,6 +4,7 @@
 import { redirect } from "next/navigation"
 import { sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
+import { cookies } from "next/headers"
 
 import {
   addBlog,
@@ -83,9 +84,14 @@ export const createBlog = async (
   revalidatePath("/blogs")
   revalidatePath("/users")
 
-  // Complete the normal create flow on the server. Returning success state for
-  // this path let a cached form replay its old client effect when revisited.
   if (!stayOnForm) {
+    const cookieStore = await cookies()
+    cookieStore.set("blog-created", "1", {
+      httpOnly: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30,
+    })
     redirect("/blogs")
   }
 
@@ -143,7 +149,6 @@ export const addToReadingList = async (formData: FormData) => {
   `)
 
   revalidatePath("/me")
-  revalidatePath(`/blogs/${blogId}`)
 }
 
 
