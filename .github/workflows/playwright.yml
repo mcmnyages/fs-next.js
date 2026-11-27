@@ -74,6 +74,8 @@ jobs:
       # 7. Run database migrations
       - name: Run database migrations
         run: npx drizzle-kit push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       # 8. Run Playwright tests
       - name: Run Playwright tests
