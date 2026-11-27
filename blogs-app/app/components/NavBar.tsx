@@ -1,10 +1,15 @@
-"use client"
-
 import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
+import { auth, signOut } from "@/auth"
 
-export default function NavBar() {
-  const { data: session } = useSession()
+export const instant = false
+
+export default async function NavBar() {
+  const session = await auth()
+
+  async function logout() {
+    "use server"
+    await signOut({ redirectTo: "/" })
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-white/85 backdrop-blur-md">
@@ -61,12 +66,14 @@ export default function NavBar() {
               >
                 me
               </Link>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-1.5 font-medium text-stone-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
-              >
-                logout
-              </button>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-1.5 font-medium text-stone-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+                >
+                  logout
+                </button>
+              </form>
             </>
           ) : (
             <>

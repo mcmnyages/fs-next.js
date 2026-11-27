@@ -8,6 +8,7 @@ import { users } from "../../db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { auth } from "../../auth"
+import { randomUUID } from "node:crypto"
 
 export const registerUser = async (
   prevState: { error: string },
@@ -60,7 +61,7 @@ export const generateToken = async () => {
   }
 
   // Generate a new unique token
-  const token = crypto.randomUUID()
+  const token = randomUUID()
 
   // Update the logged-in user's token
   const result = await db
@@ -76,6 +77,5 @@ export const generateToken = async () => {
   // Refresh profile data
   revalidatePath("/me")
 
-  // Force a fresh server-rendered profile
-  redirect("/me")
+  return token
 }

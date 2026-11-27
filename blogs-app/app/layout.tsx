@@ -1,5 +1,5 @@
-import AuthSessionProvider from "./components/SessionProvider"
 import NavBar from "./components/NavBar"
+import { Suspense } from "react"
 import { NotificationProvider } from "./components/NotificationContext"
 import Notification from "./components/Notification"
 import "./globals.css"
@@ -12,13 +12,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthSessionProvider>
-          <NotificationProvider>
-            <NavBar />
-            <Notification />
-            {children}
-          </NotificationProvider>
-        </AuthSessionProvider>
+        <NotificationProvider>
+          <Suspense fallback={<div className="h-16" />}>
+          <NavBar />
+        </Suspense>
+          <Notification />
+          {children}
+        </NotificationProvider>
       </body>
     </html>
   )

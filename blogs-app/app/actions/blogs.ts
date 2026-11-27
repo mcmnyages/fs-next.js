@@ -2,39 +2,19 @@
 "use server"
 
 import { redirect } from "next/navigation"
-import { eq } from "drizzle-orm"
+import { sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 
 import {
   addBlog,
   likeBlog,
-  addBlogToReadingList,
   markBlogAsRead,
 } from "../services/blogs"
 
 import { auth } from "@/auth"
-import { users, blogs } from "@/db/schema"
+import { blogs, readingList } from "@/db/schema"
 import { db } from "@/db"
-
-// Get the authenticated user
-const getAuthenticatedUser = async () => {
-  const session = await auth()
-  const username = session?.user?.email
-
-  if (!username) {
-    redirect("/login")
-  }
-
-  const user = await db.query.users.findFirst({
-    where: eq(users.username, username),
-  })
-
-  if (!user) {
-    redirect("/login")
-  }
-
-  return user
-}
+import { randomUUID } from "node:crypto"
 
 // Create a blog
 export const createBlog = async (
@@ -49,13 +29,20 @@ export const createBlog = async (
   },
   formData: FormData,
 ) => {
-  const user = await getAuthenticatedUser()
+  const session = await auth()
+  const username = session?.user?.email
+  const userId = Number(session?.user?.id)
+
+  if (!username || !Number.isInteger(userId) || userId <= 0) {
+    redirect("/login")
+  }
 
   const title = (formData.get("title") as string)?.trim() || ""
   const author = (formData.get("author") as string)?.trim() || ""
   const url = (formData.get("url") as string)?.trim() || ""
 
   const values = { title, author, url }
+  const stayOnForm = formData.get("afterCreate") === "another"
 
   if (!title || title.length < 5) {
     return {
@@ -82,22 +69,7 @@ export const createBlog = async (
   }
 
   try {
-    // Save the authenticated user's ID as the blog owner
-    await addBlog(title, author, url, user.id)
-
-    revalidatePath("/blogs")
-    revalidatePath("/users")
-    revalidatePath("/me")
-
-    return {
-      error: "",
-      success: true,
-      values: {
-        title: "",
-        author: "",
-        url: "",
-      },
-    }
+    await addBlog(title, author, url, userId)
   } catch (error) {
     console.error("Error creating blog:", error)
 
@@ -106,6 +78,27 @@ export const createBlog = async (
       success: false,
       values,
     }
+  }
+
+  revalidatePath("/blogs")
+  revalidatePath("/users")
+
+  // Complete the normal create flow on the server. Returning success state for
+  // this path let a cached form replay its old client effect when revisited.
+  if (!stayOnForm) {
+    redirect("/blogs")
+  }
+
+  return {
+    error: "",
+    success: true,
+    stayOnForm,
+    submissionId: randomUUID(),
+    values: {
+      title: "",
+      author: "",
+      url: "",
+    },
   }
 }
 
@@ -124,9 +117,13 @@ export const likeBlogAction = async (formData: FormData) => {
 }
 
 
-// Add a blog to the reading list
 export const addToReadingList = async (formData: FormData) => {
-  const user = await getAuthenticatedUser()
+  const session = await auth()
+  const userId = Number(session?.user?.id)
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    redirect("/login")
+  }
 
   const blogId = Number(formData.get("blogId"))
 
@@ -134,32 +131,29 @@ export const addToReadingList = async (formData: FormData) => {
     throw new Error("Invalid blog ID")
   }
 
-  const blog = await db.query.blogs.findFirst({
-    where: eq(blogs.id, blogId),
-  })
+  await db.execute(sql`
+    INSERT INTO ${readingList} ("user_id", "blog_id", "read")
+    SELECT ${userId}, ${blogId}, false
+    WHERE EXISTS (
+      SELECT 1 FROM ${blogs}
+      WHERE ${blogs.id} = ${blogId}
+        AND (${blogs.userId} IS NULL OR ${blogs.userId} <> ${userId})
+    )
+    ON CONFLICT DO NOTHING
+  `)
 
-  if (!blog) {
-    throw new Error("Blog not found")
-  }
-
-  // Users cannot add their own blogs
-  if (blog.userId === user.id) {
-    return
-  }
-
-  // Avoid duplicate reading-list entries
-  await addBlogToReadingList(user.id, blogId)
-
-  // Refresh affected pages
-  revalidatePath(`/blogs/${blogId}`)
-  revalidatePath("/blogs")
   revalidatePath("/me")
+  revalidatePath(`/blogs/${blogId}`)
 }
 
 
-// Mark a blog as read
 export const markAsRead = async (formData: FormData) => {
-  const user = await getAuthenticatedUser()
+  const session = await auth()
+  const userId = Number(session?.user?.id)
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    redirect("/login")
+  }
 
   const blogId = Number(formData.get("blogId"))
 
@@ -167,12 +161,7 @@ export const markAsRead = async (formData: FormData) => {
     throw new Error("Invalid blog ID")
   }
 
-  // Update reading list
-  await markBlogAsRead(user.id, blogId)
+  await markBlogAsRead(userId, blogId)
 
-  // Revalidate the profile page
   revalidatePath("/me")
-
-  // Force a fresh server-rendered page
-  redirect("/me")
 }

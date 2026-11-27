@@ -2,7 +2,6 @@
 "use client"
 
 import { useActionState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { createBlog } from "../../actions/blogs"
 import { useNotification } from "../../components/NotificationContext"
 
@@ -17,19 +16,14 @@ const NewBlog = () => {
     },
   })
 
-  const router = useRouter()
   const { showNotification } = useNotification()
 
   useEffect(() => {
-    if (state.success) {
+    if (state.success && state.stayOnForm) {
       showNotification("Blog created successfully!", "success")
-      router.push("/blogs")
     }
+  }, [state.success, state.stayOnForm, showNotification])
 
-    if (state.error) {
-      showNotification(state.error, "error")
-    }
-  }, [state, showNotification, router])
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -50,7 +44,7 @@ const NewBlog = () => {
           </p>
         </div>
 
-        <form action={formAction} className="space-y-6">
+        <form key={state.submissionId} action={formAction} className="space-y-6">
 
           <div>
             <label className="block text-sm font-semibold text-stone-800">
@@ -108,6 +102,15 @@ const NewBlog = () => {
               className="w-full cursor-pointer rounded-xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-stone-950 shadow-sm transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               {isPending ? "Creating..." : "Create"}
+            </button>
+            <button
+              type="submit"
+              name="afterCreate"
+              value="another"
+              disabled={isPending}
+              className="mt-3 w-full cursor-pointer rounded-xl border border-stone-300 px-6 py-3.5 text-sm font-bold text-stone-800 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:mt-0 sm:w-auto"
+            >
+              Save and add another
             </button>
           </div>
 

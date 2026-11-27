@@ -2,10 +2,9 @@
 import { notFound } from "next/navigation"
 import { auth } from "@/auth"
 import { db } from "@/db"
-import { users } from "@/db/schema"
-import { eq } from "drizzle-orm"
+import { blogs, readingList } from "@/db/schema"
+import { and, eq } from "drizzle-orm"
 
-import { getBlogById, isInReadingList } from "../../services/blogs"
 import { likeBlogAction, addToReadingList } from "../../actions/blogs"
 
 export const instant = false
@@ -23,26 +22,33 @@ const BlogPage = async ({
     notFound()
   }
 
-  const blog = await getBlogById(blogId)
+  const session = await auth()
+  const sessionUserId = Number(session?.user?.id)
+  const userId = Number.isInteger(sessionUserId) && sessionUserId > 0
+    ? sessionUserId
+    : null
+  const [row] = await db
+    .select({
+      blog: blogs,
+      readingListBlogId: readingList.blogId,
+    })
+    .from(blogs)
+    .leftJoin(
+      readingList,
+      and(
+        eq(readingList.userId, userId ?? -1),
+        eq(readingList.blogId, blogs.id),
+      ),
+    )
+    .where(eq(blogs.id, blogId))
+    .limit(1)
 
-  if (!blog) {
+  if (!row?.blog) {
     notFound()
   }
 
-  // Get logged-in user
-  const session = await auth()
-  const username = session?.user?.email
-
-  const user = username
-    ? await db.query.users.findFirst({
-        where: eq(users.username, username),
-      })
-    : null
-
-  // Check whether the blog is already in the reading list
-  const alreadyAdded = user
-    ? await isInReadingList(user.id, blog.id)
-    : null
+  const { blog } = row
+  const alreadyAdded = row.readingListBlogId != null
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -129,7 +135,7 @@ const BlogPage = async ({
           </div>
 
           {/* Reading List Section */}
-          {user && (
+          {userId !== null && (
             <div
               data-testid="reading-list-control"
               className="border-t border-stone-200 pt-6"
@@ -159,7 +165,7 @@ const BlogPage = async ({
           )}
 
           {/* Login Prompt */}
-          {!user && (
+          {userId === null && (
             <div className="border-t border-stone-200 pt-6">
               <a
                 href="/login"
