@@ -1,16 +1,29 @@
 
 import { eq, sql, and } from "drizzle-orm"
 import { db } from "@/db"
-import { blogs, readingList,users } from "@/db/schema"
+import { blogs, readingList } from "@/db/schema"
 
+// Get all blogs
 export const getBlogs = async () => {
   return db.query.blogs.findMany()
 }
 
-export const addBlog = async (title: string, author: string, url: string) => {
-  await db.insert(blogs).values({ title, author, url })
+// Create a blog and associate it with its owner
+export const addBlog = async (
+  title: string,
+  author: string,
+  url: string,
+  userId: number,
+) => {
+  await db.insert(blogs).values({
+    title,
+    author,
+    url,
+    userId,
+  })
 }
 
+// Like a blog
 export const likeBlog = async (id: number) => {
   await db
     .update(blogs)
@@ -20,37 +33,42 @@ export const likeBlog = async (id: number) => {
     .where(eq(blogs.id, id))
 }
 
-export const getBlogById = (id: number) => {
+// Get a blog by ID
+export const getBlogById = async (id: number) => {
   return db.query.blogs.findFirst({
-    where: eq(blogs.id, id)
+    where: eq(blogs.id, id),
   })
 }
 
-// Add blog to reading list
+// Add a blog to a user's reading list
 export const addBlogToReadingList = async (
   userId: number,
-  blogId: number
+  blogId: number,
 ) => {
   await db
     .insert(readingList)
-    .values({ userId, blogId })
+    .values({
+      userId,
+      blogId,
+      read: false,
+    })
     .onConflictDoNothing()
 }
 
-// Check if blog is already in reading list
+// Check whether a blog is already in a user's reading list
 export const isInReadingList = async (
   userId: number,
-  blogId: number
+  blogId: number,
 ) => {
   return db.query.readingList.findFirst({
     where: and(
       eq(readingList.userId, userId),
-      eq(readingList.blogId, blogId)
-    )
+      eq(readingList.blogId, blogId),
+    ),
   })
 }
 
-// Get user's reading list
+// Get a user's reading list, including the associated blog
 export const getReadingList = async (userId: number) => {
   return db.query.readingList.findMany({
     where: eq(readingList.userId, userId),
@@ -60,25 +78,20 @@ export const getReadingList = async (userId: number) => {
   })
 }
 
-
-// Mark a blog as read
+// Mark a reading-list item as read
 export const markBlogAsRead = async (
-  username: string,
-  blogId: number
+  userId: number,
+  blogId: number,
 ) => {
-  const user = await db.query.users.findFirst({
-    where: eq(users.username, username),
-  })
-
-  if (!user) return
-
   await db
     .update(readingList)
-    .set({ read: true })
+    .set({
+      read: true,
+    })
     .where(
       and(
-        eq(readingList.userId, user.id),
-        eq(readingList.blogId, blogId)
-      )
+        eq(readingList.userId, userId),
+        eq(readingList.blogId, blogId),
+      ),
     )
 }

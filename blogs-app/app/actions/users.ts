@@ -50,22 +50,32 @@ export const registerUser = async (
   redirect("/login")
 }
 
- 
+
 export const generateToken = async () => {
   const session = await auth()
-
   const username = session?.user?.email
 
   if (!username) {
-    throw new Error("You must be logged in")
+    redirect("/login")
   }
 
+  // Generate a new unique token
   const token = crypto.randomUUID()
 
-  await db
+  // Update the logged-in user's token
+  const result = await db
     .update(users)
     .set({ token })
     .where(eq(users.username, username))
+    .returning({ id: users.id })
 
+  if (result.length === 0) {
+    throw new Error("User not found")
+  }
+
+  // Refresh profile data
   revalidatePath("/me")
+
+  // Force a fresh server-rendered profile
+  redirect("/me")
 }

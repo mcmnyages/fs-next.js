@@ -17,7 +17,13 @@ const BlogPage = async ({
 }) => {
   const { id } = await params
 
-  const blog = await getBlogById(Number(id))
+  const blogId = Number(id)
+
+  if (!Number.isInteger(blogId) || blogId <= 0) {
+    notFound()
+  }
+
+  const blog = await getBlogById(blogId)
 
   if (!blog) {
     notFound()
@@ -33,34 +39,42 @@ const BlogPage = async ({
       })
     : null
 
-  // Check ownership
-  const isOwner = user && blog.userId === user.id
-
-  // Check reading list
+  // Check whether the blog is already in the reading list
   const alreadyAdded = user
     ? await isInReadingList(user.id, blog.id)
     : null
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <article className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">
+      <article
+        data-testid="blog-detail"
+        className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm"
+      >
+        {/* Blog Header */}
         <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-900 px-8 py-10 text-white">
           <span className="inline-block rounded-full bg-amber-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-300 ring-1 ring-amber-300/30">
             Featured Post
           </span>
 
-          <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+          <h2
+            data-testid="blog-title"
+            className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl"
+          >
             {blog.title}
           </h2>
 
           <p className="mt-3 text-sm text-stone-300">
             Author:{" "}
-            <span className="font-semibold text-white">
+            <span
+              data-testid="blog-author"
+              className="font-semibold text-white"
+            >
               {blog.author}
             </span>
           </p>
         </div>
 
+        {/* Blog Content */}
         <div className="space-y-6 p-8">
           <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-stone-200/80">
             <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
@@ -80,6 +94,7 @@ const BlogPage = async ({
             </p>
           </div>
 
+          {/* Likes Section */}
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-6">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-lg font-bold text-amber-800">
@@ -98,7 +113,11 @@ const BlogPage = async ({
             </div>
 
             <form action={likeBlogAction}>
-              <input type="hidden" name="id" value={blog.id} />
+              <input
+                type="hidden"
+                name="id"
+                value={blog.id}
+              />
 
               <button
                 type="submit"
@@ -109,13 +128,16 @@ const BlogPage = async ({
             </form>
           </div>
 
-          {/* Reading list button */}
-          {user && !isOwner && (
-            <div className="border-t border-stone-200 pt-6">
+          {/* Reading List Section */}
+          {user && (
+            <div
+              data-testid="reading-list-control"
+              className="border-t border-stone-200 pt-6"
+            >
               {alreadyAdded ? (
-                <p className="rounded-xl bg-green-50 px-5 py-3 text-sm font-semibold text-green-700">
+                <div className="rounded-xl bg-green-50 px-5 py-3 text-sm font-semibold text-green-700">
                   ✓ Added to your reading list
-                </p>
+                </div>
               ) : (
                 <form action={addToReadingList}>
                   <input
@@ -125,13 +147,26 @@ const BlogPage = async ({
                   />
 
                   <button
+                    data-testid="add-to-reading-list-button"
                     type="submit"
-                    className="w-full rounded-xl bg-stone-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-stone-700"
+                    className="w-full cursor-pointer rounded-xl bg-stone-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-stone-700 active:scale-[0.98]"
                   >
                     + Add to reading list
                   </button>
                 </form>
               )}
+            </div>
+          )}
+
+          {/* Login Prompt */}
+          {!user && (
+            <div className="border-t border-stone-200 pt-6">
+              <a
+                href="/login"
+                className="block rounded-xl bg-stone-100 px-5 py-3 text-center text-sm font-semibold text-stone-700 transition hover:bg-stone-200"
+              >
+                Log in to add this blog to your reading list
+              </a>
             </div>
           )}
         </div>

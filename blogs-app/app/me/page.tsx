@@ -4,15 +4,10 @@ import { db } from "@/db"
 import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { redirect } from "next/navigation"
+
 import { generateToken } from "@/app/actions/users"
 import { markAsRead } from "@/app/actions/blogs"
 import { getReadingList } from "@/app/services/blogs"
-import type { InferSelectModel } from "drizzle-orm"
-import type { blogs, readingList } from "@/db/schema"
-
-type ReadingListItem = InferSelectModel<typeof readingList> & {
-  blog: InferSelectModel<typeof blogs>
-}
 
 export const instant = false
 
@@ -33,12 +28,19 @@ const MePage = async () => {
     redirect("/login")
   }
 
-  // Fetch reading list
-  const readingListItems: ReadingListItem[] = await getReadingList(user.id)
+  // Fetch the user's reading list
+  const readingListItems = await getReadingList(user.id)
 
-  // Separate read and unread blogs
-  const unreadBlogs = readingListItems.filter((item) => !item.read)
-  const readBlogs = readingListItems.filter((item) => item.read)
+  // Separate unread and read blogs
+  const unreadBlogs = readingListItems.filter(
+    (item) => !item.read,
+  )
+
+  const readBlogs = readingListItems.filter(
+    (item) => item.read,
+  )
+
+  const isReadingListEmpty = readingListItems.length === 0
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -63,18 +65,28 @@ const MePage = async () => {
         <div className="space-y-8 p-8">
 
           {/* User Information */}
-          <div className="grid gap-4 rounded-2xl border border-stone-200/80 bg-stone-50/80 p-5 sm:grid-cols-2">
+          <div
+            data-testid="user-profile"
+            className="grid gap-4 rounded-2xl border border-stone-200/80 bg-stone-50/80 p-5 sm:grid-cols-2"
+          >
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
                 Name
               </p>
 
-              <p className="mt-1 text-base font-bold text-stone-900">
+              <p
+                data-testid="user-name"
+                className="mt-1 text-base font-bold text-stone-900"
+              >
                 {user.name}
               </p>
             </div>
 
             <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                Username
+              </p>
+
               <p
                 data-testid="user-username"
                 className="mt-1 text-base font-semibold text-stone-800"
@@ -85,29 +97,41 @@ const MePage = async () => {
           </div>
 
           {/* API Token Section */}
-          <div className="border-t border-stone-100 pt-6">
+          <div
+            data-testid="api-token-section"
+            className="border-t border-stone-100 pt-6"
+          >
             <h2 className="text-xl font-extrabold text-stone-900">
               Personal API Token
             </h2>
 
             <p className="mt-1 text-xs text-stone-500">
-              Use this token to authenticate external requests. Generating a
-              new token may invalidate your previous one.
+              Use this token to authenticate external requests.
+              Generating a new token may invalidate your previous one.
             </p>
 
             <div className="mt-4">
               {user.token ? (
-                <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4">
+                <div
+                  data-testid="token-display"
+                  className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4"
+                >
                   <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-800">
                     Active Token
                   </p>
 
-                  <p className="break-all rounded-xl border border-stone-200 bg-white p-3.5 font-mono text-sm text-stone-900 select-all">
+                  <p
+                    data-testid="api-token"
+                    className="break-all rounded-xl border border-stone-200 bg-white p-3.5 font-mono text-sm text-stone-900 select-all"
+                  >
                     {user.token}
                   </p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500">
+                <div
+                  data-testid="no-token-message"
+                  className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500"
+                >
                   No token has been generated yet.
                 </div>
               )}
@@ -115,16 +139,20 @@ const MePage = async () => {
 
             <form action={generateToken} className="mt-5">
               <button
+                data-testid="generate-token-button"
                 type="submit"
-                className="cursor-pointer rounded-xl bg-amber-500 px-6 py-3 text-sm font-bold text-stone-950 shadow-sm transition hover:bg-amber-400 active:scale-[0.99]"
+                className="cursor-pointer rounded-xl bg-amber-500 px-6 py-3 text-sm font-bold text-stone-950 shadow-sm transition hover:bg-amber-400"
               >
                 Generate new token
               </button>
             </form>
           </div>
 
-          {/* Reading List */}
-          <div className="border-t border-stone-100 pt-6">
+          {/* Reading List Section */}
+          <div
+            data-testid="reading-list-section"
+            className="border-t border-stone-100 pt-6"
+          >
             <h2 className="text-xl font-extrabold text-stone-900">
               My Reading List
             </h2>
@@ -134,13 +162,26 @@ const MePage = async () => {
             </p>
 
             {/* Unread Blogs */}
-            <div className="mt-6">
+            <section
+              data-testid="unread-section"
+              className="mt-6"
+            >
               <h3 className="mb-4 text-lg font-bold text-stone-800">
                 Unread Blogs ({unreadBlogs.length})
               </h3>
 
-              {unreadBlogs.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500">
+              {isReadingListEmpty ? (
+                <p
+                  data-testid="empty-reading-list"
+                  className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500"
+                >
+                  No unread blogs.
+                </p>
+              ) : unreadBlogs.length === 0 ? (
+                <p
+                  data-testid="no-unread-blogs"
+                  className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500"
+                >
                   No unread blogs.
                 </p>
               ) : (
@@ -173,6 +214,7 @@ const MePage = async () => {
                         />
 
                         <button
+                          data-testid={`mark-read-${item.blogId}`}
                           type="submit"
                           className="cursor-pointer rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-stone-950 transition hover:bg-amber-400"
                         >
@@ -183,16 +225,22 @@ const MePage = async () => {
                   ))}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Read Blogs */}
-            <div className="mt-8">
+            <section
+              data-testid="read-section"
+              className="mt-8"
+            >
               <h3 className="mb-4 text-lg font-bold text-stone-800">
                 Read Blogs ({readBlogs.length})
               </h3>
 
               {readBlogs.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500">
+                <p
+                  data-testid="no-read-blogs"
+                  className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-500"
+                >
                   No read blogs yet.
                 </p>
               ) : (
@@ -222,7 +270,7 @@ const MePage = async () => {
                   ))}
                 </div>
               )}
-            </div>
+            </section>
           </div>
 
         </div>

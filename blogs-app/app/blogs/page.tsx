@@ -14,8 +14,8 @@ const Blogs = async ({
 
   const filteredBlogs = filter
     ? allBlogs.filter((blog) =>
-        blog.title.toLowerCase().includes(filter.toLowerCase())
-      )
+      blog.title.toLowerCase().includes(filter.toLowerCase())
+    )
     : allBlogs
 
   const blogs = [...filteredBlogs].sort((a, b) => b.likes - a.likes)
@@ -38,15 +38,17 @@ const Blogs = async ({
           className="flex w-full max-w-md items-center gap-2"
         >
           <input
+            data-testid="filter-input"
             type="text"
             name="filter"
             placeholder="Search blogs by title..."
             defaultValue={filter || ""}
-            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 shadow-xs transition focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15"
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-900"
           />
           <button
+            data-testid="search-button"
             type="submit"
-            className="shrink-0 cursor-pointer rounded-xl bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+            className="shrink-0 cursor-pointer rounded-xl bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white"
           >
             Search
           </button>
@@ -63,7 +65,10 @@ const Blogs = async ({
           </p>
         </div>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2">
+        <div
+          data-testid="blogs-list"
+          className="grid gap-5 md:grid-cols-2"
+        >
           {blogs.map((blog, index) => (
             <article
               key={blog.id}

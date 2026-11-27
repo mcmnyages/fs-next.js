@@ -1,13 +1,13 @@
+
 "use client"
 
 import { useActionState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { createBlog } from "../../actions/blogs"
 import { useNotification } from "../../components/NotificationContext"
-import { useRouter } from "next/navigation"
-
 
 const NewBlog = () => {
-  const [state, formAction] = useActionState(createBlog, {
+  const [state, formAction, isPending] = useActionState(createBlog, {
     error: "",
     success: false,
     values: {
@@ -16,12 +16,13 @@ const NewBlog = () => {
       url: "",
     },
   })
+
   const router = useRouter()
   const { showNotification } = useNotification()
 
   useEffect(() => {
     if (state.success) {
-      showNotification("blog created", "success")
+      showNotification("Blog created successfully!", "success")
       router.push("/blogs")
     }
 
@@ -33,23 +34,28 @@ const NewBlog = () => {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <div className="rounded-3xl border border-stone-200 bg-white p-8 shadow-sm sm:p-10">
+
         <div className="mb-8 border-b border-stone-100 pb-6">
           <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-800">
             New Entry
           </span>
+
           <h2 className="mt-3 text-3xl font-black tracking-tight text-stone-900">
             Create a new blog
           </h2>
+
           <p className="mt-1 text-sm text-stone-500">
-            Share a great article or link with the community (minimum 5
-            characters per field).
+            Share a great article or link with the community
+            (minimum 5 characters per field).
           </p>
         </div>
 
         <form action={formAction} className="space-y-6">
+
           <div>
             <label className="block text-sm font-semibold text-stone-800">
               Title
+
               <input
                 type="text"
                 name="title"
@@ -65,6 +71,7 @@ const NewBlog = () => {
           <div>
             <label className="block text-sm font-semibold text-stone-800">
               Author
+
               <input
                 type="text"
                 name="author"
@@ -80,6 +87,7 @@ const NewBlog = () => {
           <div>
             <label className="block text-sm font-semibold text-stone-800">
               URL
+
               <input
                 type="url"
                 name="url"
@@ -95,9 +103,11 @@ const NewBlog = () => {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full cursor-pointer rounded-xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-stone-950 shadow-sm transition hover:bg-amber-400 active:scale-[0.99] sm:w-auto"
+              data-testid="create-blog-button"
+              disabled={isPending}
+              className="w-full cursor-pointer rounded-xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-stone-950 shadow-sm transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
-              Create
+              {isPending ? "Creating..." : "Create"}
             </button>
           </div>
 
@@ -106,6 +116,7 @@ const NewBlog = () => {
               {state.error}
             </p>
           )}
+
         </form>
       </div>
     </main>
