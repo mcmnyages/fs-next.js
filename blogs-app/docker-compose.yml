@@ -1,8 +1,12 @@
 services:
   app1:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: app1
     restart: unless-stopped
+    env_file:
+      - .env.local
     networks:
       - web-net
     deploy:
