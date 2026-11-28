@@ -1,0 +1,15 @@
+services:
+  app1:
+    build: .
+    container_name: app1
+    restart: unless-stopped
+    networks:
+      - web-net
+    deploy:
+      resources:
+        limits:
+          memory: 350M
+
+networks:
+  web-net:
+    external: true
