@@ -1,18 +1,30 @@
+
 services:
-  app1:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: app1
+  caddy:
+    image: caddy:2-alpine
     restart: unless-stopped
-    env_file:
-      - .env.local
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+
     networks:
       - web-net
+
     deploy:
       resources:
         limits:
-          memory: 350M
+          memory: 150M
+
+volumes:
+  caddy_data:
+  caddy_config:
 
 networks:
   web-net:
