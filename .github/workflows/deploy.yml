@@ -1,12 +1,16 @@
+
 name: Deploy App1 to OCI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
+    name: Deploy to OCI Server
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -14,8 +18,30 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          script_stop: true
           script: |
-            cd ~/apps/app1
+            set -e
+
+            echo "Starting deployment..."
+
+            cd /home/ubuntu/apps/fs-next.js
+
+            echo "Pulling latest code from main..."
             git pull origin main
+
+            echo "Entering application directory..."
+            cd blogs-app
+
+            echo "Building and starting Docker containers..."
             docker compose up -d --build
+
+            echo "Removing unused Docker images..."
             docker image prune -f
+
+            echo "Checking container status..."
+            docker compose ps
+
+            echo "Deployment completed successfully!"
