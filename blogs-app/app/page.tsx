@@ -7,6 +7,7 @@ export default function Home() {
       <div className="markdown">
         <Homepage />
       </div>
+      <footer>Developed by <a href="https://github.com/mcmnyages">Silas Moracha aka McMnyages</a> and deployed in Oracle VPS</footer>
     </main>
   )
 }
